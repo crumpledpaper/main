@@ -2,6 +2,7 @@ package seedu.address.model.recmodule;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static seedu.address.model.util.SampleCourseRequirement.SCIENCE_REGEX;
 import static seedu.address.testutil.TypicalModuleTaken.CS2101;
 import static seedu.address.testutil.TypicalModuleTaken.CS2103T;
 import static seedu.address.testutil.TypicalModuleTaken.GER1000;
@@ -131,15 +132,107 @@ public class RecModulePredicateTest {
             String code = rm.getCode().toString();
             if (code.contains("GEH")) {
                 assertFalse(gehRmp.test(rm));
+                assertTrue(geqRmp.test(rm));
+                assertTrue(gerRmp.test(rm));
+                assertTrue(gesRmp.test(rm));
+                assertTrue(getRmp.test(rm));
             } else if (code.contains("GEQ")) {
                 assertFalse(geqRmp.test(rm));
+                assertTrue(gehRmp.test(rm));
+                assertTrue(gerRmp.test(rm));
+                assertTrue(gesRmp.test(rm));
+                assertTrue(getRmp.test(rm));
             } else if (code.contains("GER")) {
                 assertFalse(gerRmp.test(rm));
+                assertTrue(geqRmp.test(rm));
+                assertTrue(gehRmp.test(rm));
+                assertTrue(gesRmp.test(rm));
+                assertTrue(getRmp.test(rm));
             } else if (code.contains("GES")) {
                 assertFalse(gesRmp.test(rm));
-            } else if (code.contains("GET")) {
+                assertTrue(geqRmp.test(rm));
+                assertTrue(gehRmp.test(rm));
+                assertTrue(gerRmp.test(rm));
+                assertTrue(getRmp.test(rm));
+            } else if (code.contains("GET") && !code.equals("GET1021")) {
                 assertFalse(getRmp.test(rm));
+                assertTrue(geqRmp.test(rm));
+                assertTrue(gehRmp.test(rm));
+                assertTrue(gerRmp.test(rm));
+                assertTrue(gesRmp.test(rm));
             }
         }
+    }
+
+    @Test
+    public void test_facModule() {
+        GradTrak gt = new GradTrakBuilder()
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("PC1144").build()).build();
+
+        RecModulePredicate rmp1 = new RecModulePredicate(algoCourse, gt);
+        RecModulePredicate rmp2 = new RecModulePredicate(algoCourse, emptyGradTrak);
+
+        for (RecModule rm : allModules) {
+            if (rm.getCode().toString().matches(SCIENCE_REGEX)) {
+                assertFalse(rmp1.test(rm));
+                if (!rm.getCode().toString()
+                        .matches("MA2213|MA2214|MA2104|MA2101|MA2108|MA2501|ST2132|ST2137")) {
+                    assertTrue(rmp2.test(rm));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void test_ieModule() {
+        GradTrak gt1 = new GradTrakBuilder()
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CP3880").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2101").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2103T").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS3103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS2103").build()).build();
+        GradTrak gt2 = new GradTrakBuilder()
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS4010").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2101").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS3103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS2103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2103T").build()).build();
+        GradTrak gt3 = new GradTrakBuilder()
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CP3200").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CP3202").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2101").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS3103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS2103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2103T").build()).build();
+        GradTrak gt4 = new GradTrakBuilder()
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CP3200").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2101").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS3103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("IS2103").build())
+                .withPerson(new ModuleTakenBuilder().withModuleInfoCode("CS2103T").build()).build();
+
+        RecModule cp3880 = rmb.create("CP3880");
+        RecModule is4010 = rmb.create("IS4010");
+        RecModule cp3200 = rmb.create("CP3200");
+        RecModule cp3202 = rmb.create("CP3202");
+
+        RecModulePredicate rmp = new RecModulePredicate(algoCourse, gt1);
+        assertFalse(rmp.test(is4010));
+        assertFalse(rmp.test(cp3200));
+        assertFalse(rmp.test(cp3202));
+
+        rmp = new RecModulePredicate(algoCourse, gt2);
+        assertFalse(rmp.test(cp3880));
+        assertFalse(rmp.test(cp3200));
+        assertFalse(rmp.test(cp3202));
+
+        rmp = new RecModulePredicate(algoCourse, gt3);
+        assertFalse(rmp.test(cp3880));
+        assertFalse(rmp.test(is4010));
+
+        rmp = new RecModulePredicate(algoCourse, gt4);
+        assertTrue(rmp.test(cp3880));
+        assertTrue(rmp.test(is4010));
+        assertTrue(rmp.test(cp3202));
     }
 }
